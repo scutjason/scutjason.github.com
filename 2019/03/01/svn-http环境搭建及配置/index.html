@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="svn,svn-http,helm,kubernetes,docker,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文介绍svn-http环境搭建及如何配置权限。">
+<meta name="keywords" content="svn,svn-http,helm,kubernetes,docker">
+<meta property="og:type" content="article">
+<meta property="og:title" content="svn-http环境搭建及配置">
+<meta property="og:url" content="https://scutjason.github.io/2019/03/01/svn-http环境搭建及配置/index.html">
+<meta property="og:site_name" content="Jason徐">
+<meta property="og:description" content="本文介绍svn-http环境搭建及如何配置权限。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-03-06T03:12:18.135Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="svn-http环境搭建及配置">
+<meta name="twitter:description" content="本文介绍svn-http环境搭建及如何配置权限。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://scutjason.github.io/2019/03/01/svn-http环境搭建及配置/">
+
+
+
+
+
+  <title>svn-http环境搭建及配置 | Jason徐</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?577ea439ded5d56daf6128a2b444e908";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jason徐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://scutjason.github.io/2019/03/01/svn-http环境搭建及配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="scutjason">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jason徐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">svn-http环境搭建及配置</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-01T10:12:41+08:00">
+                2019-03-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工具/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工具/svn/" itemprop="url" rel="index">
+                    <span itemprop="name">svn</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 阅读数
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文介绍svn-http环境搭建及如何配置权限。<br><a id="more"></a>在项目文档管理领域svn一直是带头大哥，接下来我们一起看看怎么用云服务器部署svn并且进行权限配置</p>
+<h1 id="编译svn镜像"><a href="#编译svn镜像" class="headerlink" title="编译svn镜像"></a>编译svn镜像</h1><p>svn有两种访问协议svn协议和http协议。这里我们选用http协议，能够在web端显示文档库。<br>这里我自己写的dockerfile，基于alpine-base轻量级的linux内核，安装mod_dav_svn（http协议需要）和apache。<br>具体的dockerfile参考<a href="https://github.com/scutjason/tools/blob/master/svn-docker/Dockerfile" target="_blank" rel="noopener">这里</a>。</p>
+<h1 id="部署svn"><a href="#部署svn" class="headerlink" title="部署svn"></a>部署svn</h1><p>我这里采用kubernetes阿里云部署，利用helm工具。主要是下面几个参数说明一下，在service.yaml中<br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line"><span class="attr">  type:</span> <span class="string">LoadBalancer</span></span><br><span class="line"><span class="attr">  ports:</span></span><br><span class="line"><span class="attr">    -  port:</span> <span class="number">80</span></span><br><span class="line"><span class="attr">      targetPort:</span> <span class="number">80</span>    <span class="comment"># 这个端口是访问http协议的端口</span></span><br><span class="line"><span class="attr">      protocol:</span> <span class="string">TCP</span></span><br><span class="line"><span class="attr">      name:</span> <span class="string">http</span></span><br><span class="line"><span class="attr">    -  port:</span> <span class="number">3960</span>        <span class="comment"># 这个端口是svn协议的端口 -- 对应 dockerfile中svnserve 的listen-port</span></span><br><span class="line"><span class="attr">      targetPort:</span> <span class="number">3960</span></span><br><span class="line"><span class="attr">      protocol:</span> <span class="string">TCP</span></span><br><span class="line"><span class="attr">      name:</span> <span class="string">svn</span></span><br></pre></td></tr></table></figure></p>
+<p>执行命令<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">helm install ./svn_helm --<span class="keyword">namespace</span>=myspace -n svn</span><br></pre></td></tr></table></figure></p>
+<p>查看是否部署成功<br><figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">PS C:\Users\scutjason&gt; helm ls</span><br><span class="line">svn                     <span class="number">1</span>               Mon Mar  <span class="number">4</span> <span class="number">16</span>:<span class="number">46</span>:<span class="number">21</span> <span class="number">2019</span>        DEPLOYED        svn-<span class="number">1.0</span><span class="meta">.3</span>               <span class="number">1.0</span>             myspace</span><br><span class="line"></span><br><span class="line">PS C:\Users\scutjason&gt; kubectl get pods --namespace=myspace</span><br><span class="line">svn-8584bc7df9-7zw26                 <span class="number">1</span>/<span class="number">1</span>       Running       <span class="number">0</span></span><br><span class="line"></span><br><span class="line">PS C:\Users\scutjason&gt; kubectl get services --namespace=finmind</span><br><span class="line">svn                 LoadBalancer   <span class="number">172.41</span><span class="meta">.16</span><span class="meta">.160</span>    <span class="number">112.168</span><span class="meta">.165</span><span class="meta">.225</span>   <span class="number">80</span>:<span class="number">30855</span>/TCP,<span class="number">3960</span>:<span class="number">30166</span>/TCP   <span class="number">1d</span></span><br><span class="line"></span><br><span class="line"><span class="number">112.168</span><span class="meta">.165</span><span class="meta">.225</span> 这个<span class="built_in">ip</span>就是我们svn的外网http地址。打开浏览器输入http://<span class="number">112.168</span><span class="meta">.165</span><span class="meta">.225</span>/svn 就能看到页面了，虽然里面啥都没有，因为我们还没有创建仓库。</span><br></pre></td></tr></table></figure></p>
+<p>ok部署成功。</p>
+<h1 id="创建svn仓库"><a href="#创建svn仓库" class="headerlink" title="创建svn仓库"></a>创建svn仓库</h1><p>在cmd中执行下面的命令进入svn容器。<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl exec -it svn-<span class="number">8584</span>bc7df9-<span class="number">7</span>zw26  <span class="regexp">/bin/</span>sh --namespace=myspace</span><br><span class="line">svnadmin create <span class="regexp">/home/</span>svn<span class="regexp">/repo    # svn仓库默认地址在/</span>home<span class="regexp">/svn目录，我们web能访问到的路径也在/</span>home<span class="regexp">/svn这一目录。</span></span><br></pre></td></tr></table></figure></p>
+<p>ok，重新打开浏览器输入<a href="http://112.168.165.225/svn" target="_blank" rel="noopener">http://112.168.165.225/svn</a> 就应该能看到有个repo文件夹了。</p>
+<p>这里可能需要改变一下仓库目录的权限。<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown -R <span class="string">apache:</span>apache <span class="regexp">/home/</span>svn/</span><br></pre></td></tr></table></figure></p>
+<h1 id="配置svn用户名和密码"><a href="#配置svn用户名和密码" class="headerlink" title="配置svn用户名和密码"></a>配置svn用户名和密码</h1><p>接下来配置svn的用户密码<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">htpasswd</span> -<span class="keyword">b </span>/etc/<span class="keyword">subversion/passwd </span>scutjason <span class="number">123456</span></span><br></pre></td></tr></table></figure></p>
+<p>配置一个scutjason的用户，其密码是123456，如果想添加其他用户和密码，也是执行这条命令。<br>加下来在浏览器输入<a href="http://112.168.165.225/svn/repo" target="_blank" rel="noopener">http://112.168.165.225/svn/repo</a> 或者用TortoiseSVN checkout repo仓库的时候会提示输入用户名和密码。<br>然后我们输入上面配置的用户名和密码后就能访问或者checkout了。</p>
+<h1 id="配置svn仓库的访问权限"><a href="#配置svn仓库的访问权限" class="headerlink" title="配置svn仓库的访问权限"></a>配置svn仓库的访问权限</h1><p>具体的权限控制目录在/etc/subversion/subversion-access-control文件。用vi打开编辑即可。<br><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">user</span> <span class="title">= scutjason</span>, scutsylvia <span class="comment"># 配置user组里面有两个人scutjason 和 scutsylvia</span></span><br><span class="line">[repo:/]    <span class="comment"># 对应repo仓库目录下的所有目录</span></span><br><span class="line">@<span class="keyword">user</span> <span class="title">= rw</span>  <span class="comment"># user这个组的人都有rw权限</span></span><br><span class="line"></span><br><span class="line">[repo:/code]    <span class="comment"># 对于repo仓库下的code目录</span></span><br><span class="line">scutjason = rw  <span class="comment"># scutjason 有读写权限</span></span><br><span class="line">scutsylvia = r  <span class="comment"># scutsylvia 有读的权限</span></span><br><span class="line">* =             <span class="comment"># 除了scutjason 和 scutsylvia外的所有人没有任何权限</span></span><br></pre></td></tr></table></figure></p>
+<h1 id="svn的后台服务"><a href="#svn的后台服务" class="headerlink" title="svn的后台服务"></a>svn的后台服务</h1><figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># top</span></span><br><span class="line">Mem: 7665112K used, 345084K free, 26764K shrd, 249712K buff, 1479368K cached</span><br><span class="line">CPU:   2% usr   0% sys   0% nic  97% idle   0% io   0% irq   0% sirq</span><br><span class="line">Load average: 0.01 0.09 0.12 2/1224 409</span><br><span class="line">  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND</span><br><span class="line"> <span class="number"> 400 </span> <span class="number"> 234 </span>apache   S   <span class="number"> 98324 </span>  1%  <span class="number"> 3 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 401 </span> <span class="number"> 234 </span>apache   S   <span class="number"> 98324 </span>  1%  <span class="number"> 1 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 399 </span> <span class="number"> 234 </span>apache   S   <span class="number"> 98324 </span>  1%  <span class="number"> 3 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 397 </span> <span class="number"> 234 </span>apache   S   <span class="number"> 98324 </span>  1%  <span class="number"> 3 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 398 </span> <span class="number"> 234 </span>apache   S   <span class="number"> 98324 </span>  1%  <span class="number"> 1 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 234 </span> <span class="number"> 231 </span>root     S   <span class="number"> 98312 </span>  1%  <span class="number"> 2 </span>  0% /usr/sbin/httpd -DFOREGROUND</span><br><span class="line"> <span class="number"> 224 </span> <span class="number"> 216 </span>go-dnsma S    <span class="number"> 9512 </span>  0%  <span class="number"> 1 </span>  0% go-dnsmasq --default-resolver --ndots<span class="number"> 1 </span>--fwd-ndots<span class="number"> 0 </span>--hostsfile=/etc/hosts</span><br><span class="line"> <span class="number"> 271 </span>   <span class="number"> 0 </span>root     S    <span class="number"> 1540 </span>  0%  <span class="number"> 0 </span>  0% /bin/sh</span><br><span class="line"> <span class="number"> 402 </span>   <span class="number"> 0 </span>root     S    <span class="number"> 1540 </span>  0%  <span class="number"> 2 </span>  0% /bin/sh</span><br><span class="line"> <span class="number"> 264 </span>   <span class="number"> 0 </span>root     S    <span class="number"> 1540 </span>  0%  <span class="number"> 0 </span>  0% /bin/sh</span><br><span class="line"> <span class="number"> 231 </span>  <span class="number"> 35 </span>root     S    <span class="number"> 1536 </span>  0%  <span class="number"> 3 </span>  0% &#123;apachectl&#125; /bin/sh /usr/sbin/apachectl -DFOREGROUND</span><br><span class="line"> <span class="number"> 216 </span> <span class="number"> 213 </span>root     S    <span class="number"> 1532 </span>  0%  <span class="number"> 0 </span>  0% sh ./run</span><br><span class="line"> <span class="number"> 409 </span> <span class="number"> 402 </span>root     R    <span class="number"> 1524 </span>  0%  <span class="number"> 3 </span>  0% top</span><br><span class="line">   <span class="number"> 1 </span>   <span class="number"> 0 </span>root     S     <span class="number"> 184 </span>  0%  <span class="number"> 0 </span>  0% s6-svscan -t0 /var/run/s6/services</span><br><span class="line"> <span class="number"> 213 </span>   <span class="number"> 1 </span>root     S     <span class="number"> 184 </span>  0%  <span class="number"> 1 </span>  0% s6-supervise resolver</span><br><span class="line">  <span class="number"> 30 </span>   <span class="number"> 1 </span>root     S     <span class="number"> 184 </span>  0%  <span class="number"> 1 </span>  0% s6-supervise s6-fdholderd</span><br><span class="line">  <span class="number"> 29 </span>   <span class="number"> 1 </span>root     S     <span class="number"> 172 </span>  0%  <span class="number"> 0 </span>  0% foreground  if   /etc/s6/init/init-stage2-redirfd   foreground    if     if      s6-echo      -n      --      [s6-init] making user provided files available at /var/</span><br><span class="line">  <span class="number"> 35 </span>  <span class="number"> 29 </span>root     S     <span class="number"> 168 </span>  0%  <span class="number"> 2 </span>  0% foreground  s6-setsid  -gq  --  with-contenv  /usr/sbin/apachectl  -DFOREGROUND  importas -u ? ? if  s6-echo  --  /usr/sbin/apachectl exited $&#123;?&#125;  foreground  redirf</span><br><span class="line">/ <span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">/ # ps</span><br><span class="line">PID  <span class="built_in"> USER </span>    TIME   COMMAND</span><br><span class="line">    1 root       0:00 s6-svscan -t0 /var/run/s6/services</span><br><span class="line">   29 root       0:00 foreground  <span class="keyword">if</span>   /etc/s6/init/init-stage2-redirfd   foreground    <span class="keyword">if</span>     <span class="keyword">if</span>      s6-echo      -n      --      [s6-init] making<span class="built_in"> user </span>provided files available at /var/run/s6/etc<span class="built_in">..</span>.</span><br><span class="line">   30 root       0:00 s6-supervise s6-fdholderd</span><br><span class="line">   35 root       0:00 foreground  s6-setsid  -gq  --  with-contenv  /usr/sbin/apachectl  -DFOREGROUND  importas -u ? ? <span class="keyword">if</span>  s6-echo  --  /usr/sbin/apachectl exited <span class="variable">$&#123;?&#125;</span>  foreground  redirfd  -w  1  /var/run/s6/e</span><br><span class="line">  213 root       0:00 s6-supervise resolver</span><br><span class="line">  216 root       0:00 sh ./run</span><br><span class="line">  224 go-dnsma   0:00 go-dnsmasq --default-resolver --ndots 1 --fwd-ndots 0 <span class="attribute">--hostsfile</span>=/etc/hosts</span><br><span class="line">  231 root       0:00 &#123;apachectl&#125; /bin/sh /usr/sbin/apachectl -DFOREGROUND</span><br><span class="line">  234 root       0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  264 root       0:00 /bin/sh</span><br><span class="line">  271 root       0:00 /bin/sh</span><br><span class="line">  397 apache     0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  398 apache     0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  399 apache     0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  400 apache     0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  401 apache     0:00 /usr/sbin/httpd -DFOREGROUND</span><br><span class="line">  402 root       0:00 /bin/sh</span><br><span class="line">  410 root       0:00 ps</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/svn/" rel="tag"># svn</a>
+          
+            <a href="/tags/svn-http/" rel="tag"># svn-http</a>
+          
+            <a href="/tags/helm/" rel="tag"># helm</a>
+          
+            <a href="/tags/kubernetes/" rel="tag"># kubernetes</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/27/lda可视化/" rel="next" title="lda可视化">
+                <i class="fa fa-chevron-left"></i> lda可视化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/12/LDA原理剖析/" rel="prev" title="LDA原理剖析">
+                LDA原理剖析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">scutjason</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/scutjason" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:824681539@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#编译svn镜像"><span class="nav-number">1.</span> <span class="nav-text">编译svn镜像</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#部署svn"><span class="nav-number">2.</span> <span class="nav-text">部署svn</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#创建svn仓库"><span class="nav-number">3.</span> <span class="nav-text">创建svn仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#配置svn用户名和密码"><span class="nav-number">4.</span> <span class="nav-text">配置svn用户名和密码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#配置svn仓库的访问权限"><span class="nav-number">5.</span> <span class="nav-text">配置svn仓库的访问权限</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#svn的后台服务"><span class="nav-number">6.</span> <span class="nav-text">svn的后台服务</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">scutjason</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a></div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人
+    </span>
+  
+
+  
+    <span class="site-pv">
+      总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
